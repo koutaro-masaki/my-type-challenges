@@ -94,6 +94,15 @@ export default function Home() {
 
   const { renderDialog, showDialog } = useDialog()
 
+  useEffect(() => {
+    const defaultProblem = problems[0]
+
+    const key = getKey(defaultProblem)
+    const solutions = JSON.parse(localStorage.getItem(key) || '[]')
+    setCurrentSolutions(solutions)
+    setSelectedUrl(defaultProblem.link.answer)
+  }, [])
+
   return (
     <main
       className={css({
