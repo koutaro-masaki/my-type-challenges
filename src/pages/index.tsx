@@ -122,12 +122,7 @@ export default function Home() {
           })}
         >
           <Header />
-          <select
-            className={selectStyle}
-            value={selectedProblem.number}
-            defaultValue={2}
-            onChange={handleSelectProblem}
-          >
+          <select className={selectStyle} value={selectedProblem.number} onChange={handleSelectProblem}>
             {problems.map((problem) => (
               <option key={problem.number} value={problem.number}>
                 {`${problem.number} - ${problem.title}`}
