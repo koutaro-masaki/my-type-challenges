@@ -165,14 +165,7 @@ export default function Home() {
           </div>
           <button onClick={handleSave}>Save</button>
 
-          <button
-            onClick={async () => {
-              const result = await showDialog()
-              alert(result)
-            }}
-          >
-            open
-          </button>
+          <button onClick={showDialog}>open</button>
           {renderDialog()}
         </div>
         <div
