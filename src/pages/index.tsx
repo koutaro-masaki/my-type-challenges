@@ -3,6 +3,7 @@ import { Problem, getProblem, problems } from '@src/data/problems'
 import { css } from '@styled-system/css'
 import { flex } from '@styled-system/patterns'
 import { Dialog, useDialogProps } from '@src/components/dialog'
+import { Box } from '@styled-system/jsx'
 
 const selectStyle = css({
   width: '300px',
@@ -35,9 +36,15 @@ const selectStyle = css({
     color: 'gray.400',
   },
 })
+const inputStyle = css({
+  border: 'none',
+  borderBottom: '1px solid',
+  display: 'block',
+})
 
 type Solution = {
   url: string | null
+  title: string
   createdAt: string
   solved: boolean
 }
@@ -49,14 +56,17 @@ export default function Home() {
   const [currentSolutions, setCurrentSolutions] = React.useState<Solution[]>([])
   const [selectedSolutionIndex, setSelectedSolutionIndex] = React.useState<number | undefined>(undefined)
 
-  const inputRef = React.useRef<HTMLInputElement>(null)
+  const titleInputRef = React.useRef<HTMLInputElement>(null)
+  const urlInputRef = React.useRef<HTMLInputElement>(null)
   const [solved, setSolved] = React.useState(false)
 
   const handleSave = useCallback(() => {
-    const url = inputRef.current?.value.replace('play?#code', 'play#code')
+    const title = titleInputRef.current?.value ?? ''
+    const url = urlInputRef.current?.value.replace('play?#code', 'play#code')
     if (url) {
       const solution: Solution = {
         url,
+        title,
         createdAt: new Date().toISOString(),
         solved,
       }
@@ -129,6 +139,9 @@ export default function Home() {
               </option>
             ))}
           </select>
+
+          <Box height="4" />
+
           <ProblemInfo problem={selectedProblem} />
 
           {currentSolutions.length > 0 && (
@@ -141,33 +154,40 @@ export default function Home() {
             </select>
           )}
 
-          <input
-            ref={inputRef}
-            type="text"
+          <Box height="4" />
+
+          <div
             className={css({
-              border: '1px solid',
-              display: 'block',
+              padding: '16px',
+              backgroundColor: 'gray.50',
+              fontSize: '14px',
+              color: 'gray.500',
             })}
-          ></input>
-          <div>
-            <input
-              id="mark-as-solved"
-              type="checkbox"
-              checked={solved}
-              onChange={(e) => {
-                setSolved(e.target.checked)
-              }}
-            ></input>
-            <label
-              htmlFor="mark-as-solved"
-              className={css({
-                userSelect: 'none',
-              })}
-            >
-              Solved
-            </label>
+          >
+            <label htmlFor="title-input">Title</label>
+            <input id="title-input" ref={titleInputRef} type="text" className={inputStyle}></input>
+            <label htmlFor="url-input">URL</label>
+            <input id="url-input" ref={urlInputRef} type="text" className={inputStyle}></input>
+            <div>
+              <input
+                id="mark-as-solved"
+                type="checkbox"
+                checked={solved}
+                onChange={(e) => {
+                  setSolved(e.target.checked)
+                }}
+              ></input>
+              <label
+                htmlFor="mark-as-solved"
+                className={css({
+                  userSelect: 'none',
+                })}
+              >
+                Solved
+              </label>
+            </div>
+            <button onClick={handleSave}>Save</button>
           </div>
-          <button onClick={handleSave}>Save</button>
 
           <button onClick={showDialog}>open</button>
           {renderDialog()}
