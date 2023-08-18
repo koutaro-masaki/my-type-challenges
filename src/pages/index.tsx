@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Problem, getProblem, problems } from '@src/data/problems'
 import { css } from '@styled-system/css'
 import { flex } from '@styled-system/patterns'
@@ -89,9 +89,17 @@ export default function Home() {
   const { renderDialog, showDialog } = useDialog()
 
   useEffect(() => {
-    const defaultProblem = problems[0]
-
-    setSelectedUrl(defaultProblem.link.answer)
+    ;(async () => {
+      const result = await showDialog(false)
+      if (result) {
+        setSelectedProblem(result.program)
+        setSelectedUrl(result.solution.url)
+        setSolutionId(result.solution.id)
+        titleInputRef.current?.value != null && (titleInputRef.current.value = result.solution.title)
+        urlInputRef.current?.value != null && (urlInputRef.current.value = result.solution.url ?? '')
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleShowDialog = useCallback(async () => {
@@ -240,13 +248,15 @@ const ProblemInfo: React.FC<{ problem: Problem }> = ({ problem }) => {
 export const useDialog = () => {
   const { isOpen, dialogRef, onOpen, onClose } = useDialogProps()
   const [resolve, setResolve] = useState<((value: DialogResolverProps | null) => void) | undefined>(undefined)
+  const [allowCancel, setAllowCancel] = useState(true)
 
   // TODO: ここらへんもuseDialogPropsに混ぜ込んでしまいたい
   // useDialog側はDialogコンポーネントを使って、Dialogの中身を定義するだけにしたい
   const handleCancel = useCallback(() => {
+    if (!allowCancel) return
     onClose()
     resolve?.(null)
-  }, [onClose, resolve])
+  }, [allowCancel, onClose, resolve])
   const handleClose = useCallback(
     (x: DialogResolverProps) => {
       onClose()
@@ -263,8 +273,9 @@ export const useDialog = () => {
     )
   }, [dialogRef, isOpen, handleCancel, handleClose])
   const showDialog = useCallback(
-    () =>
+    (allowCancel?: boolean) =>
       new Promise<DialogResolverProps | null>((resolve) => {
+        setAllowCancel(allowCancel ?? true)
         onOpen()
         setResolve(() => resolve)
       }),
@@ -289,14 +300,18 @@ const DialogBody: React.FC<{ resolve: (value: DialogResolverProps) => void }> = 
 
       const solutions = JSON.parse(localStorage.getItem(key) || '[]')
       console.log(key, solutions)
-      setCurrentSolutions(solutions)
       setSelectedSolutionIndex(undefined)
     }
   }, [])
 
-  const [currentSolutions, setCurrentSolutions] = React.useState<Solution[]>([])
-
   const [selectedSolutionIndex, setSelectedSolutionIndex] = React.useState<number | undefined>(undefined)
+
+  const currentSolutions = useMemo(() => {
+    const key = getKey(selectedProblem)
+    const solutions = JSON.parse(localStorage.getItem(key) || '[]') as Solution[]
+    // TODO: バリデーション入れる
+    return solutions
+  }, [selectedProblem])
 
   const handleClose = useCallback(() => {
     if (selectedSolutionIndex == null) return
