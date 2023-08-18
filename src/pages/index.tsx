@@ -43,6 +43,7 @@ const inputStyle = css({
 })
 
 type Solution = {
+  id: string
   url: string | null
   title: string
   createdAt: string
@@ -53,8 +54,7 @@ const getKey = (problem: Problem) => `${problem.number}_${problem.title}`
 export default function Home() {
   const [selectedProblem, setSelectedProblem] = React.useState<Problem>(problems[0])
   const [selectedUrl, setSelectedUrl] = React.useState<string | null>(null)
-  const [currentSolutions, setCurrentSolutions] = React.useState<Solution[]>([])
-  const [selectedSolutionIndex, setSelectedSolutionIndex] = React.useState<number | undefined>(undefined)
+  const [solutionId, setSolutionId] = React.useState<string>()
 
   const titleInputRef = React.useRef<HTMLInputElement>(null)
   const urlInputRef = React.useRef<HTMLInputElement>(null)
@@ -63,8 +63,9 @@ export default function Home() {
   const handleSave = useCallback(() => {
     const title = titleInputRef.current?.value ?? ''
     const url = urlInputRef.current?.value.replace('play?#code', 'play#code')
-    if (url) {
+    if (url && solutionId != null) {
       const solution: Solution = {
+        id: solutionId,
         url,
         title,
         createdAt: new Date().toISOString(),
@@ -72,46 +73,37 @@ export default function Home() {
       }
 
       const key = getKey(selectedProblem)
+      console.log(key, solutionId)
 
-      const solutions = JSON.parse(localStorage.getItem(key) || '[]')
-      localStorage.setItem(key, JSON.stringify([...solutions, solution]))
-      setCurrentSolutions([...solutions, solution])
+      const solutions = (JSON.parse(localStorage.getItem(key) || '[]') as Solution[]).flatMap((s) =>
+        s.id === solutionId ? [solution] : [s]
+      )
+      if (solutions.filter((s) => s.id === solutionId).length === 0) {
+        solutions.push(solution)
+      }
+
+      localStorage.setItem(key, JSON.stringify(solutions))
     }
-  }, [selectedProblem, solved])
-
-  const handleSelectProblem = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const problem = getProblem(e.target.value)
-    if (problem) {
-      setSelectedProblem(problem)
-
-      const key = getKey(problem)
-
-      const solutions = JSON.parse(localStorage.getItem(key) || '[]')
-      setCurrentSolutions(solutions)
-      setSelectedUrl(problem.link.answer)
-    }
-  }, [])
-
-  const handleSelectSolution = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const i = Number(e.target.value)
-      const solution = currentSolutions[i]
-      setSelectedSolutionIndex(i)
-      setSelectedUrl(solution.url)
-    },
-    [currentSolutions]
-  )
+  }, [selectedProblem, solutionId, solved])
 
   const { renderDialog, showDialog } = useDialog()
 
   useEffect(() => {
     const defaultProblem = problems[0]
 
-    const key = getKey(defaultProblem)
-    const solutions = JSON.parse(localStorage.getItem(key) || '[]')
-    setCurrentSolutions(solutions)
     setSelectedUrl(defaultProblem.link.answer)
   }, [])
+
+  const handleShowDialog = useCallback(async () => {
+    const result = await showDialog()
+    if (result) {
+      setSelectedProblem(result.program)
+      setSelectedUrl(result.solution.url)
+      setSolutionId(result.solution.id)
+      titleInputRef.current?.value != null && (titleInputRef.current.value = result.solution.title)
+      urlInputRef.current?.value != null && (urlInputRef.current.value = result.solution.url ?? '')
+    }
+  }, [showDialog])
 
   return (
     <main
@@ -132,27 +124,10 @@ export default function Home() {
           })}
         >
           <Header />
-          <select className={selectStyle} value={selectedProblem.number} onChange={handleSelectProblem}>
-            {problems.map((problem) => (
-              <option key={problem.number} value={problem.number}>
-                {`${problem.number} - ${problem.title}`}
-              </option>
-            ))}
-          </select>
 
           <Box height="4" />
 
           <ProblemInfo problem={selectedProblem} />
-
-          {currentSolutions.length > 0 && (
-            <select className={selectStyle} value={selectedSolutionIndex} onChange={handleSelectSolution}>
-              {currentSolutions.map(({ createdAt, solved }, i) => (
-                <option key={createdAt} value={i}>
-                  {solved ? '✅' : '🤔'} {createdAt.substring(0, 10)}
-                </option>
-              ))}
-            </select>
-          )}
 
           <Box height="4" />
 
@@ -189,7 +164,7 @@ export default function Home() {
             <button onClick={handleSave}>Save</button>
           </div>
 
-          <button onClick={showDialog}>open</button>
+          <button onClick={handleShowDialog}>open</button>
           {renderDialog()}
         </div>
         <div
@@ -264,29 +239,32 @@ const ProblemInfo: React.FC<{ problem: Problem }> = ({ problem }) => {
 
 export const useDialog = () => {
   const { isOpen, dialogRef, onOpen, onClose } = useDialogProps()
-  const [resolve, setResolve] = useState<((ok: boolean) => void) | undefined>(undefined)
+  const [resolve, setResolve] = useState<((value: DialogResolverProps | null) => void) | undefined>(undefined)
 
   // TODO: ここらへんもuseDialogPropsに混ぜ込んでしまいたい
   // useDialog側はDialogコンポーネントを使って、Dialogの中身を定義するだけにしたい
   const handleCancel = useCallback(() => {
     onClose()
-    resolve?.(false)
+    resolve?.(null)
   }, [onClose, resolve])
-  const handleClose = useCallback(() => {
-    onClose()
-    resolve?.(true)
-  }, [onClose, resolve])
+  const handleClose = useCallback(
+    (x: DialogResolverProps) => {
+      onClose()
+      resolve?.(x)
+    },
+    [onClose, resolve]
+  )
+
   const renderDialog = useCallback(() => {
     return (
       <Dialog ref={dialogRef} isOpen={isOpen} onClose={handleCancel}>
-        <div>hello</div>
-        <button onClick={handleClose}>OK</button>
+        {isOpen && <DialogBody resolve={handleClose} />}
       </Dialog>
     )
-  }, [isOpen, dialogRef, handleClose, handleCancel])
+  }, [dialogRef, isOpen, handleCancel, handleClose])
   const showDialog = useCallback(
     () =>
-      new Promise<void>((resolve) => {
+      new Promise<DialogResolverProps | null>((resolve) => {
         onOpen()
         setResolve(() => resolve)
       }),
@@ -297,4 +275,71 @@ export const useDialog = () => {
     renderDialog,
     showDialog,
   }
+}
+
+type DialogResolverProps = { program: Problem; solution: Solution }
+
+const DialogBody: React.FC<{ resolve: (value: DialogResolverProps) => void }> = ({ resolve }) => {
+  const [selectedProblem, setSelectedProblem] = React.useState<Problem>(problems[0])
+  const handleSelectProblem = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const problem = getProblem(e.target.value)
+    if (problem) {
+      setSelectedProblem(problem)
+      const key = getKey(problem)
+
+      const solutions = JSON.parse(localStorage.getItem(key) || '[]')
+      console.log(key, solutions)
+      setCurrentSolutions(solutions)
+      setSelectedSolutionIndex(undefined)
+    }
+  }, [])
+
+  const [currentSolutions, setCurrentSolutions] = React.useState<Solution[]>([])
+
+  const [selectedSolutionIndex, setSelectedSolutionIndex] = React.useState<number | undefined>(undefined)
+
+  const handleClose = useCallback(() => {
+    if (selectedSolutionIndex == null) return
+    resolve({
+      program: selectedProblem,
+      solution: currentSolutions[selectedSolutionIndex],
+    })
+  }, [currentSolutions, resolve, selectedProblem, selectedSolutionIndex])
+
+  const handleNew = useCallback(() => {
+    resolve({
+      program: selectedProblem,
+      solution: {
+        id: self.crypto.randomUUID(),
+        url: selectedProblem.link.answer,
+        title: '',
+        createdAt: new Date().toISOString(),
+        solved: false,
+      },
+    })
+  }, [resolve, selectedProblem])
+
+  return (
+    <>
+      <select className={selectStyle} value={selectedProblem.number} onChange={handleSelectProblem}>
+        {problems.map((problem) => (
+          <option key={problem.number} value={problem.number}>
+            {`${problem.number} - ${problem.title}`}
+          </option>
+        ))}
+      </select>
+      <button onClick={handleNew}>New</button>
+      <ul>
+        {currentSolutions.map(({ createdAt, solved }, i) => (
+          <li key={createdAt} value={i} onClick={() => setSelectedSolutionIndex(i)}>
+            {selectedSolutionIndex === i ? '👉' : null}
+            {solved ? '✅' : '🤔'} {createdAt.substring(0, 10)}
+          </li>
+        ))}
+      </ul>
+      <button disabled={selectedSolutionIndex == null} onClick={handleClose}>
+        OK
+      </button>
+    </>
+  )
 }
