@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react'
+import React, { ChangeEvent, useCallback } from 'react'
 
 import { Button } from '@src/components/common'
 import { Header, Playground, ProblemInfo, SolutionInfo, useDialog } from '@src/components/home'
-import { saveSolution } from '@src/lib/store'
+import { exportSolutions, importSolutions, saveSolution } from '@src/lib/store'
 import { Problem } from '@src/models'
 
 import { css } from '@styled-system/css'
@@ -43,6 +43,50 @@ export default function Home() {
     }
   }, [showDialog])
 
+  const handleExport = useCallback(() => {
+    const data = exportSolutions()
+    const blob = new Blob([JSON.stringify(data)], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'my-type-challenges.json'
+    a.target = '_blank'
+    a.click()
+  }, [])
+  const handleImport = useCallback(() => {
+    const fileInput = document.createElement('input')
+    fileInput.type = 'file'
+    fileInput.setAttribute('hidden', 'true')
+
+    fileInput.addEventListener(
+      'change',
+      async (e) => {
+        const file = (e as unknown as ChangeEvent<HTMLInputElement>).target?.files?.[0]
+        if (!file) return
+
+        const reader = new FileReader()
+        const result = await new Promise<string | null>((resolve) => {
+          reader.onload = (e) => {
+            const fileContents = e.target?.result
+            if (typeof fileContents !== 'string') return null
+
+            resolve(fileContents)
+          }
+          reader.readAsText(file)
+        })
+
+        if (!result) return
+
+        importSolutions(result)
+      },
+      false
+    )
+
+    document.body.appendChild(fileInput)
+    fileInput.click()
+    fileInput.remove()
+  }, [])
+
   return (
     <main className={css({ minHeight: '100vh', width: '100vw' })}>
       <div className={flex({ flexDirection: 'row', gap: '16px' })}>
@@ -68,6 +112,13 @@ export default function Home() {
               />
             </>
           )}
+
+          <Button variant="primary" onClick={handleExport}>
+            Export
+          </Button>
+          <Button variant="primary" onClick={handleImport}>
+            Import
+          </Button>
         </div>
         <div className={css({ width: '100%', height: '100vh', padding: '16px' })}>
           {selectedUrl ? <Playground src={selectedUrl} /> : <Box width="100%" height="100%" bg="gray.200" />}
