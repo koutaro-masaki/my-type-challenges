@@ -1,4 +1,4 @@
-import { Solution, Problem } from '@src/models'
+import { Problem, Solution } from '@src/models'
 
 const getKey = (problem: Problem) => `${problem.number}_${problem.title}`
 

@@ -1,5 +1,7 @@
 import { css } from '@styled-system/css'
 
+import { Button } from '../common/button'
+
 const inputStyle = css({
   border: 'none',
   borderBottom: '1px solid',
@@ -32,7 +34,9 @@ export const SolutionInfo: React.FC<Props> = ({ solvedInputRef, titleInputRef, u
           Solved
         </label>
       </div>
-      <button onClick={onSave}>Save</button>
+      <Button variant="secondary" onClick={onSave}>
+        Save
+      </Button>
     </div>
   )
 }

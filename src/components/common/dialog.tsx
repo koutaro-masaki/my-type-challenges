@@ -1,5 +1,6 @@
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
+import { forwardRef, useCallback, useRef, useState } from 'react'
 import { RemoveScroll } from 'react-remove-scroll'
+
 import { css } from '@styled-system/css'
 
 const dialogStyle = css({

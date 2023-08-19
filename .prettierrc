@@ -3,5 +3,17 @@
   "tabWidth": 2,
   "semi": false,
   "singleQuote": true,
-  "printWidth": 120
+  "printWidth": 120,
+  "importOrder": [
+    "react",
+    "^@src/(.*)$",
+    "^@styled-system/(.*)$",
+    "^@ui/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports"
+  ]
 }

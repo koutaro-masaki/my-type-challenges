@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect } from 'react'
+
+import { Button } from '@src/components/common'
+import { Header, Playground, ProblemInfo, SolutionInfo, useDialog } from '@src/components/home'
 import { problems } from '@src/data/problems'
-import { css } from '@styled-system/css'
-import { flex } from '@styled-system/patterns'
-import { Box } from '@styled-system/jsx'
-import { Problem, Solution } from '@src/models'
-import { Playground, Header, ProblemInfo, SolutionInfo, useDialog } from '@src/components/home'
 import { saveSolution } from '@src/lib/store'
+import { Problem, Solution } from '@src/models'
+
+import { css } from '@styled-system/css'
+import { Box } from '@styled-system/jsx'
+import { flex } from '@styled-system/patterns'
 
 export default function Home() {
   const [selectedProblem, setSelectedProblem] = React.useState<Problem>(problems[0])
@@ -67,6 +70,10 @@ export default function Home() {
         <div className={css({ paddingLeft: '16px' })}>
           <Header />
 
+          <Button variant="primary" onClick={handleShowDialog}>
+            Open
+          </Button>
+
           <Box height="4" />
 
           <ProblemInfo problem={selectedProblem} />
@@ -79,13 +86,12 @@ export default function Home() {
             solvedInputRef={solvedRef}
             onSave={handleSave}
           />
-          <button onClick={handleShowDialog}>open</button>
-          {renderDialog()}
         </div>
         <div className={css({ width: '100%', height: '100vh', padding: '16px' })}>
           {selectedUrl && <Playground src={selectedUrl} />}
         </div>
       </div>
+      {renderDialog()}
     </main>
   )
 }

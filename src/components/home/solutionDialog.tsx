@@ -1,11 +1,13 @@
 import React from 'react'
 import { useCallback, useMemo, useState } from 'react'
-import { getProblem, problems } from '@src/data/problems'
-import { css } from '@styled-system/css'
+
 import { Dialog, useDialogProps } from '@src/components/common/dialog'
+import { getProblem, problems } from '@src/data/problems'
+import { readSolutions } from '@src/lib/store'
 import { Problem } from '@src/models/problem'
 import { Solution } from '@src/models/solution'
-import { readSolutions } from '@src/lib/store'
+
+import { css } from '@styled-system/css'
 
 const selectStyle = css({
   width: '300px',

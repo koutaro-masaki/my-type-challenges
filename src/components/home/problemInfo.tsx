@@ -1,6 +1,8 @@
 import React from 'react'
-import { css } from '@styled-system/css'
+
 import { Problem } from '@src/models/problem'
+
+import { css } from '@styled-system/css'
 
 const style = css({
   padding: '16px',
