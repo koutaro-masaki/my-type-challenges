@@ -8,6 +8,7 @@ import { Problem } from '@src/models/problem'
 import { Solution } from '@src/models/solution'
 
 import { css } from '@styled-system/css'
+import { Flex } from '@styled-system/jsx'
 
 const selectStyle = css({
   width: '300px',
@@ -39,6 +40,10 @@ const selectStyle = css({
     borderColor: 'gray.300',
     color: 'gray.400',
   },
+})
+const liStyle = css({
+  listStyleType: 'none',
+  cursor: 'pointer',
 })
 
 type DialogResolverProps = { program: Problem; solution: Solution }
@@ -86,18 +91,21 @@ const DialogBody: React.FC<{ resolve: (value: DialogResolverProps) => void }> = 
           </option>
         ))}
       </select>
-      <button onClick={handleNew}>New</button>
+      <Flex justifyContent="center" gap="2" marginTop="4">
+        <button onClick={handleNew}>New</button>
+        <button disabled={selectedSolutionIndex == null} onClick={handleClose}>
+          OK
+        </button>
+      </Flex>
+      <p>Solutions</p>
       <ul className={css({ paddingLeft: '2' })}>
         {currentSolutions.map(({ id, title, solved }, i) => (
-          <li key={id} className={css({ listStyleType: 'none' })} value={i} onClick={() => setSelectedSolutionIndex(i)}>
+          <li key={id} className={liStyle} value={i} onClick={() => setSelectedSolutionIndex(i)}>
             {selectedSolutionIndex === i ? '👉 ' : null}
             {solved ? '✅' : '🤔'} {title ?? '(untitled)'}
           </li>
         ))}
       </ul>
-      <button disabled={selectedSolutionIndex == null} onClick={handleClose}>
-        OK
-      </button>
     </>
   )
 }
