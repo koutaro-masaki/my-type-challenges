@@ -102,7 +102,7 @@ const DialogBody: React.FC<{ resolve: (value: DialogResolverProps) => void }> = 
         {currentSolutions.map(({ id, title, solved }, i) => (
           <li key={id} className={liStyle} value={i} onClick={() => setSelectedSolutionIndex(i)}>
             {selectedSolutionIndex === i ? '👉 ' : null}
-            {solved ? '✅' : '🤔'} {title ?? '(untitled)'}
+            {solved ? '✅' : '🤔'} {title || '(untitled)'}
           </li>
         ))}
       </ul>
