@@ -13,15 +13,19 @@ const style = css({
 
 export const ProblemInfo: React.FC<{ problem: Problem }> = ({
   problem: {
+    title,
+    number,
     difficulty,
     link: { answer, question },
   },
 }) => {
   return (
     <div className={style}>
+      <p className={css({ fontSize: '16px' })}>{`${number} - ${title}`}</p>
       <p>Difficulty: {difficulty}</p>
       <div>
-        <ul>
+        <p>Links:</p>
+        <ul className={css({ paddingLeft: '4' })}>
           <li>
             <a href={question} target="_blank">
               Question
