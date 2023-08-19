@@ -1,17 +1,16 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 
 import { Button } from '@src/components/common'
 import { Header, Playground, ProblemInfo, SolutionInfo, useDialog } from '@src/components/home'
-import { problems } from '@src/data/problems'
 import { saveSolution } from '@src/lib/store'
-import { Problem, Solution } from '@src/models'
+import { Problem } from '@src/models'
 
 import { css } from '@styled-system/css'
 import { Box } from '@styled-system/jsx'
 import { flex } from '@styled-system/patterns'
 
 export default function Home() {
-  const [selectedProblem, setSelectedProblem] = React.useState<Problem>(problems[0])
+  const [selectedProblem, setSelectedProblem] = React.useState<Problem>()
   const [selectedUrl, setSelectedUrl] = React.useState<string | null>(null)
   const [solutionId, setSolutionId] = React.useState<string>()
 
@@ -20,38 +19,17 @@ export default function Home() {
   const solvedRef = React.useRef<HTMLInputElement>(null)
 
   const handleSave = useCallback(() => {
-    if (solutionId == null) return
+    if (solutionId == null || selectedProblem == null) return
     if (!(titleInputRef.current && urlInputRef.current && solvedRef.current)) return
 
     const title = titleInputRef.current.value
     const url = urlInputRef.current.value.replace('play?#code', 'play#code')
     const solved = solvedRef.current.checked
 
-    const solution: Solution = {
-      id: solutionId,
-      url,
-      title,
-      solved,
-    }
-
-    saveSolution({ problem: selectedProblem, solution })
+    saveSolution({ problem: selectedProblem, solution: { id: solutionId, url, title, solved } })
   }, [selectedProblem, solutionId])
 
   const { renderDialog, showDialog } = useDialog()
-
-  useEffect(() => {
-    ;(async () => {
-      const result = await showDialog(false)
-      if (result) {
-        setSelectedProblem(result.program)
-        setSelectedUrl(result.solution.url)
-        setSolutionId(result.solution.id)
-        titleInputRef.current?.value != null && (titleInputRef.current.value = result.solution.title)
-        urlInputRef.current?.value != null && (urlInputRef.current.value = result.solution.url ?? '')
-      }
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleShowDialog = useCallback(async () => {
     const result = await showDialog()
@@ -76,16 +54,19 @@ export default function Home() {
 
           <Box height="4" />
 
-          <ProblemInfo problem={selectedProblem} />
+          {selectedProblem && (
+            <>
+              <ProblemInfo problem={selectedProblem} />
+              <Box height="4" />
 
-          <Box height="4" />
-
-          <SolutionInfo
-            titleInputRef={titleInputRef}
-            urlInputRef={urlInputRef}
-            solvedInputRef={solvedRef}
-            onSave={handleSave}
-          />
+              <SolutionInfo
+                titleInputRef={titleInputRef}
+                urlInputRef={urlInputRef}
+                solvedInputRef={solvedRef}
+                onSave={handleSave}
+              />
+            </>
+          )}
         </div>
         <div className={css({ width: '100%', height: '100vh', padding: '16px' })}>
           {selectedUrl && <Playground src={selectedUrl} />}
