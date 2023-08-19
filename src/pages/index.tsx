@@ -5,8 +5,7 @@ import { flex } from '@styled-system/patterns'
 import { Box } from '@styled-system/jsx'
 import { Problem, Solution } from '@src/models'
 import { Playground, Header, ProblemInfo, SolutionInfo, useDialog } from '@src/components/home'
-
-const getKey = (problem: Problem) => `${problem.number}_${problem.title}`
+import { saveSolution } from '@src/lib/store'
 
 export default function Home() {
   const [selectedProblem, setSelectedProblem] = React.useState<Problem>(problems[0])
@@ -32,16 +31,7 @@ export default function Home() {
       solved,
     }
 
-    const key = getKey(selectedProblem)
-
-    const solutions = (JSON.parse(localStorage.getItem(key) || '[]') as Solution[]).flatMap((s) =>
-      s.id === solutionId ? [solution] : [s]
-    )
-    if (solutions.filter((s) => s.id === solutionId).length === 0) {
-      solutions.push(solution)
-    }
-
-    localStorage.setItem(key, JSON.stringify(solutions))
+    saveSolution({ problem: selectedProblem, solution })
   }, [selectedProblem, solutionId])
 
   const { renderDialog, showDialog } = useDialog()

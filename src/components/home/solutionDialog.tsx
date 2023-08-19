@@ -5,6 +5,7 @@ import { css } from '@styled-system/css'
 import { Dialog, useDialogProps } from '@src/components/common/dialog'
 import { Problem } from '@src/models/problem'
 import { Solution } from '@src/models/solution'
+import { readSolutions } from '@src/lib/store'
 
 const selectStyle = css({
   width: '300px',
@@ -38,8 +39,6 @@ const selectStyle = css({
   },
 })
 
-const getKey = (problem: Problem) => `${problem.number}_${problem.title}`
-
 type DialogResolverProps = { program: Problem; solution: Solution }
 
 const DialogBody: React.FC<{ resolve: (value: DialogResolverProps) => void }> = ({ resolve }) => {
@@ -48,22 +47,13 @@ const DialogBody: React.FC<{ resolve: (value: DialogResolverProps) => void }> = 
     const problem = getProblem(e.target.value)
     if (problem) {
       setSelectedProblem(problem)
-      const key = getKey(problem)
-
-      const solutions = JSON.parse(localStorage.getItem(key) || '[]')
-      console.log(key, solutions)
       setSelectedSolutionIndex(undefined)
     }
   }, [])
 
   const [selectedSolutionIndex, setSelectedSolutionIndex] = React.useState<number | undefined>(undefined)
 
-  const currentSolutions = useMemo(() => {
-    const key = getKey(selectedProblem)
-    const solutions = JSON.parse(localStorage.getItem(key) || '[]') as Solution[]
-    // TODO: バリデーション入れる
-    return solutions
-  }, [selectedProblem])
+  const currentSolutions = useMemo(() => readSolutions({ problem: selectedProblem }), [selectedProblem])
 
   const handleClose = useCallback(() => {
     if (selectedSolutionIndex == null) return
