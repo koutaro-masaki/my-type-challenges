@@ -69,7 +69,7 @@ export default function Home() {
           )}
         </div>
         <div className={css({ width: '100%', height: '100vh', padding: '16px' })}>
-          {selectedUrl && <Playground src={selectedUrl} />}
+          {selectedUrl ? <Playground src={selectedUrl} /> : <Box width="100%" height="100%" bg="gray.200" />}
         </div>
       </div>
       {renderDialog()}
