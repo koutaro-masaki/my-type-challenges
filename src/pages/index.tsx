@@ -35,6 +35,7 @@ export default function Home() {
     const result = await showDialog()
     if (result) {
       setSelectedProblem(result.program)
+      // FIXME: urlが変わってない場合でも強制的にリロードさせたい
       setSelectedUrl(result.solution.url)
       setSolutionId(result.solution.id)
       titleInputRef.current?.value != null && (titleInputRef.current.value = result.solution.title)
