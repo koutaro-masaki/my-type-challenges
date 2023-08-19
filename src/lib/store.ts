@@ -18,17 +18,17 @@ export const saveSolution = ({ problem, solution }: { problem: Problem; solution
   localStorage.setItem(key, JSON.stringify(newSolutions))
 }
 
-export const exportSolutions = () => {
+export const exportSolutions = (): Record<string, Pick<Solution, 'url' | 'title' | 'solved'>[]> => {
   function* getItems() {
     for (const problem of problems) {
       const item = readSolutions({ problem }).map(({ title, url, solved }) => ({ title, url, solved }))
       if (item.length) {
-        yield [getKey(problem), JSON.stringify(item)]
+        yield [getKey(problem), item] as const
       }
     }
   }
 
-  return Object.fromEntries(getItems()) as Record<string, string>
+  return Object.fromEntries(getItems())
 }
 
 export const importSolutions = (rawData: string) => {
@@ -41,23 +41,21 @@ export const importSolutions = (rawData: string) => {
   }
 
   for (const [key, value] of Object.entries(data)) {
-    if (typeof key !== 'string' || typeof value !== 'string') {
-      console.log('invalid field', key, value)
+    if (typeof key !== 'string') {
+      console.log('invalid key', key)
       continue
     }
 
     const problem = problemMap.get(key)
     if (problem == null) continue
 
-    const parsed = JSON.parse(value) as unknown
-
-    if (!Array.isArray(parsed)) {
+    if (!Array.isArray(value)) {
       console.log('parse failed', value)
       continue
     }
 
     const solutions: Solution[] = []
-    for (const item of parsed) {
+    for (const item of value) {
       if (typeof item !== 'object' || item === null) {
         console.log('invalid item', item)
         continue
