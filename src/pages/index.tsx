@@ -31,15 +31,16 @@ export default function Home() {
 
   const { renderDialog, showDialog } = useDialog()
 
-  const handleShowDialog = useCallback(async () => {
+  const handleOpen = useCallback(async () => {
     const result = await showDialog()
     if (result) {
       setSelectedProblem(result.program)
       // FIXME: urlが変わってない場合でも強制的にリロードさせたい
       setSelectedUrl(result.solution.url)
       setSolutionId(result.solution.id)
-      titleInputRef.current?.value != null && (titleInputRef.current.value = result.solution.title)
-      urlInputRef.current?.value != null && (urlInputRef.current.value = result.solution.url ?? '')
+      titleInputRef.current != null && (titleInputRef.current.value = result.solution.title)
+      urlInputRef.current != null && (urlInputRef.current.value = result.solution.url ?? '')
+      solvedRef.current != null && (solvedRef.current.checked = result.solution.solved)
     }
   }, [showDialog])
 
@@ -93,7 +94,7 @@ export default function Home() {
         <div className={css({ paddingLeft: '16px' })}>
           <Header />
 
-          <Button variant="primary" onClick={handleShowDialog}>
+          <Button variant="primary" onClick={handleOpen}>
             Open
           </Button>
 
