@@ -131,35 +131,35 @@ const DifficultyOrdererdProblems: React.FC = () => {
 
   return (
     <>
-      <optgroup label="Warm-up">
+      <optgroup label={`Warm-up${warmUp.every(({ solved }) => solved) ? ' 🎉' : ''}`}>
         {warmUp.map(({ solved, ...problem }) => (
           <option key={problem.number} value={problem.number}>
             {`${problem.number} - ${problem.title}${solved ? ' ✅' : ''}`}
           </option>
         ))}
       </optgroup>
-      <optgroup label="Easy">
+      <optgroup label={`Easy${easy.every(({ solved }) => solved) ? ' 🎉' : ''}`}>
         {easy.map(({ solved, ...problem }) => (
           <option key={problem.number} value={problem.number}>
             {`${problem.number} - ${problem.title}${solved ? ' ✅' : ''}`}
           </option>
         ))}
       </optgroup>
-      <optgroup label="Medium">
+      <optgroup label={`Medium${medium.every(({ solved }) => solved) ? ' 🎉' : ''}`}>
         {medium.map(({ solved, ...problem }) => (
           <option key={problem.number} value={problem.number}>
             {`${problem.number} - ${problem.title}${solved ? ' ✅' : ''}`}
           </option>
         ))}
       </optgroup>
-      <optgroup label="Hard">
+      <optgroup label={`Hard${hard.every(({ solved }) => solved) ? ' 🎉' : ''}`}>
         {hard.map(({ solved, ...problem }) => (
           <option key={problem.number} value={problem.number}>
             {`${problem.number} - ${problem.title}${solved ? ' ✅' : ''}`}
           </option>
         ))}
       </optgroup>
-      <optgroup label="Extreme">
+      <optgroup label={`Extreme${extreme.every(({ solved }) => solved) ? ' 🎉' : ''}`}>
         {extreme.map(({ solved, ...problem }) => (
           <option key={problem.number} value={problem.number}>
             {`${problem.number} - ${problem.title}${solved ? ' ✅' : ''}`}
