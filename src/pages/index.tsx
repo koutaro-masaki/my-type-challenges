@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useCallback } from 'react'
 
 import { Button } from '@src/components/common'
+import { showMessage } from '@src/components/common/message'
 import { Header, Playground, ProblemInfo, SolutionInfo, useDialog } from '@src/components/home'
 import { exportSolutions, importSolutions, saveSolution } from '@src/lib/store'
 import { Problem } from '@src/models'
@@ -27,6 +28,7 @@ export default function Home() {
     const solved = solvedRef.current.checked
 
     saveSolution({ problem: selectedProblem, solution: { id: solutionId, url, title, solved } })
+    showMessage('保存しました')
   }, [selectedProblem, solutionId])
 
   const { renderDialog, showDialog } = useDialog()
@@ -79,6 +81,7 @@ export default function Home() {
         if (!result) return
 
         importSolutions(result)
+        showMessage('データを読み込みました')
       },
       false
     )
