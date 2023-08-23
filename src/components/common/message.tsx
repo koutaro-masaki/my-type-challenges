@@ -20,13 +20,13 @@ const message = css({
 export const showMessage = (text: string) => {
   const messageElement = document.createElement('div')
   messageElement.className = message
-  messageElement.popover = 'manual'
+  // popoverがexperimentalなので、ビルド時にエラーが出る
+  ;(messageElement as any).popover = 'manual'
   messageElement.innerHTML = text
   document.body.appendChild(messageElement)
   setTimeout(() => {
-    messageElement.hidePopover()
+    ;(messageElement as any).hidePopover()
     messageElement.remove()
   }, 1500)
-
-  messageElement.showPopover()
+  ;(messageElement as any).showPopover()
 }
